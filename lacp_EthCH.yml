@@ -1,0 +1,36 @@
+- name: Configure LACP EtherChannel on Routers
+  hosts: routers
+  gather_facts: no
+  tasks:
+
+    - name: Create Port-Channel Interface
+      cisco.ios.ios_interface:
+        name: Port-channel1
+        enabled: yes
+        state: present
+
+    - name: Configure LACP on Interfaces
+      cisco.ios.ios_lag_interface:
+        name: "{{ item }}"
+        mode: active  # LACP mode: active or passive
+        group: 1  # EtherChannel group
+        state: present
+      loop:
+        - Ethernet0
+        - Ethernet1
+        - Ethernet2
+        - Ethernet3
+        - Ethernet4
+
+    - name: Assign Port-Channel to VLAN
+      cisco.ios.ios_vlan:
+        vlan_id: 10
+        name: LACP_VLAN
+        state: present
+
+    - name: Assign Port-Channel to VLAN Trunk
+      cisco.ios.ios_interface:
+        name: Port-channel1
+        mode: trunk
+        state: present
+
